@@ -2,9 +2,12 @@
 
 __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
-index = {"save": "02_convert.ipynb"}
+index = {"OpenHSI": "01_capture.ipynb",
+         "save": "02_convert.ipynb",
+         "HelloSayer": "02_convert.ipynb"}
 
-modules = ["core.py"]
+modules = ["capture.py",
+           "convert.py"]
 
 doc_url = "https://YiweiMao.github.io/openhsi/"
 
