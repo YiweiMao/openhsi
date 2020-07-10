@@ -10,7 +10,13 @@ entries:
       title: Overview
       url: /
     - output: web,pdf
-      title: module name here
+      title: Calibrate
+      url: /calibrate
+    - output: web,pdf
+      title: Capture
+      url: /capture
+    - output: web,pdf
+      title: Convert
       url: /convert
     output: web
     title: openhsi

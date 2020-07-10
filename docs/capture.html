@@ -1,6 +1,6 @@
 ---
 
-title: module name here
+title: Capture
 
 keywords: fastai
 sidebar: home_sidebar
@@ -30,40 +30,52 @@ description: "Wrapper class and example code for getting images from the OpenHSI
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">astropy.io</span> <span class="kn">import</span> <span class="n">fits</span> <span class="k">as</span> <span class="n">fitsio</span>
-<span class="kn">from</span> <span class="nn">ximea</span> <span class="kn">import</span> <span class="n">xiapi</span>
-<span class="kn">import</span> <span class="nn">log</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">OpenHSI</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;XIMEA camera class to take images&quot;&quot;&quot;</span>
 
-
-<span class="k">class</span> <span class="nc">openhsi</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">serialnumber</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">xbinwidth</span><span class="o">=</span><span class="mi">896</span><span class="p">,</span> <span class="n">xbinoffset</span><span class="o">=</span><span class="mi">528</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">serialnumber</span><span class="p">:</span><span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">xbinwidth</span><span class="p">:</span><span class="nb">int</span> <span class="o">=</span> <span class="mi">896</span><span class="p">,</span> <span class="n">xbinoffset</span><span class="p">:</span><span class="nb">int</span> <span class="o">=</span> <span class="mi">528</span><span class="p">,</span> 
+                <span class="n">exposure_ms</span><span class="p">:</span><span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">gain</span><span class="p">:</span><span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Init the camera&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span> <span class="o">=</span> <span class="n">xiapi</span><span class="o">.</span><span class="n">Camera</span><span class="p">()</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">serialnumber</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">open_device</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">open_device_by_SN</span><span class="p">(</span><span class="n">serialnumber</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">open_device_by_SN</span><span class="p">(</span><span class="n">serialnumber</span><span class="p">)</span> <span class="k">if</span> <span class="n">serialnumber</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">open_device</span><span class="p">()</span>
 
-        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Conected to device, </span><span class="si">%s</span><span class="s2">!&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">get_device_sn</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="mi">5</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gain</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Connected to device </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">get_device_sn</span><span class="p">()</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">xbinwidth</span>  <span class="o">=</span> <span class="n">xbinwidth</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xbinoffset</span> <span class="o">=</span> <span class="n">xbinoffset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span>   <span class="o">=</span> <span class="n">exposure_ms</span> <span class="c1"># ms?</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gain</span>       <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">set_width</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xbinwidth</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">set_offsetX</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xbinoffset</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">set_exposure_direct</span><span class="p">(</span><span class="mi">1000</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">set_gain_direct</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain</span><span class="p">)</span>
+
+        <span class="c1"># What other settings are there?, can we make these *args, **kwargs? and check </span>
+        <span class="c1"># them using getattr()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">set_imgdataformat</span><span class="p">(</span><span class="s2">&quot;XI_RAW16&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">set_output_bit_depth</span><span class="p">(</span><span class="s2">&quot;XI_BPP_12&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">enable_output_bit_packing</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">disable_aeag</span><span class="p">()</span>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">disable_aeag</span><span class="p">()</span> <span class="c1"># what is this?</span>
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">set_binning_vertical</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">set_binning_vertical_mode</span><span class="p">(</span><span class="s2">&quot;XI_BIN_MODE_SUM&quot;</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">xbinwidth</span> <span class="o">=</span> <span class="mi">896</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">xbinoffset</span> <span class="o">=</span> <span class="mi">528</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">get_height</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">img</span> <span class="o">=</span> <span class="n">xiapi</span><span class="o">.</span><span class="n">Image</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">start_acquisition</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span>
@@ -72,80 +84,42 @@ description: "Wrapper class and example code for getting images from the OpenHSI
         <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">stop_acquisition</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">close_device</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">start_acquisition</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">stop_acquisition</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">get_single_image</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="o">.</span><span class="n">get_image_data_numpy</span><span class="p">(),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">get_image_series</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numimages</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
-            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">get_width</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">get_height</span><span class="p">(),</span> <span class="n">numimages</span><span class="p">),</span>
-            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numimages</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">)</span>
-            <span class="n">data</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="o">.</span><span class="n">get_image_data_numpy</span><span class="p">(),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">data</span>
-
-    <span class="k">def</span> <span class="nf">imgsize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">get_height</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
-
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">exposure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;current exposure property ms.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">exposure</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span> <span class="c1"># or int?</span>
+        <span class="sd">&quot;&quot;&quot;Current exposure in ms.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">get_exposure</span><span class="p">()</span> <span class="o">/</span> <span class="mi">1000</span>
 
     <span class="nd">@exposure</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">exposure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update exposure in ms.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">set_exposure_direct</span><span class="p">(</span><span class="n">val</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">gain</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;current exposure property. 0 to 24 dB&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">gain</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span> <span class="c1"># or int?</span>
+        <span class="sd">&quot;&quot;&quot;Current exposure property in dB from 0 to 24 dB.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">get_gain</span><span class="p">()</span>
 
-    <span class="nd">@exposure</span><span class="o">.</span><span class="n">setter</span>
+    <span class="nd">@gain</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update gain in dB.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">set_gain_direct</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">xbinwidth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get_img</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span><span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Take `n` images&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span><span class="n">n</span><span class="p">),</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">)</span>
+            <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="o">.</span><span class="n">get_image_data_numpy</span><span class="p">(),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span>
 
-    <span class="nd">@exposure</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">xbinwidth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">set_width</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">xbinoffset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">get_offsetX</span><span class="p">()</span>
-
-    <span class="nd">@exposure</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">xbinoffset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">xicam</span><span class="o">.</span><span class="n">set_offsetX</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-
-    <span class="k">with</span> <span class="n">openhsi</span><span class="p">()</span> <span class="k">as</span> <span class="n">os</span><span class="p">:</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="mi">1000</span>
-        <span class="n">img</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">get_single_image</span><span class="p">()</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-        <span class="n">imgplot</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
-    <span class="n">main</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">take_show</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Grab a single image using `get_img` and plot it&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">OpenHSI</span><span class="p">(</span><span class="n">xbinwidth</span><span class="o">=</span><span class="mi">896</span><span class="p">,</span><span class="n">xbinoffset</span><span class="o">=</span><span class="mi">528</span><span class="p">,</span><span class="n">exposure_ms</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span><span class="n">gain</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">cam</span><span class="p">:</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">cam</span><span class="o">.</span><span class="n">start</span><span class="p">()</span><span class="o">.</span><span class="n">get_img</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Wavelength (nm)&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Line pixels&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 
     </div>

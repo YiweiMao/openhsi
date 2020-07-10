@@ -1,6 +1,8 @@
 {
   "openhsi": {
     "Overview": "/",
-    "module name here": "/convert"
+    "Calibrate": "/calibrate",
+    "Capture": "/capture",
+    "Convert": "/convert"
   }
 }

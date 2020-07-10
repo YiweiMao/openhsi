@@ -2,8 +2,7 @@
 
 __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
-index = {"OpenHSI": "01_capture.ipynb",
-         "save": "02_convert.ipynb"}
+index = {"save": "02_convert.ipynb"}
 
 modules = ["core.py"]
 

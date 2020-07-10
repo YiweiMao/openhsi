@@ -3560,24 +3560,139 @@ L 388.128125 7.2
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">pass</span>
-</pre></div>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">find_peaks</span><span class="p">,</span> <span class="n">savgol_filter</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">curve_fit</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">interpolate</span>
+<span class="kn">from</span> <span class="nn">fastprogress.fastprogress</span> <span class="kn">import</span> <span class="n">master_bar</span><span class="p">,</span> <span class="n">progress_bar</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
 
-    </div>
-</div>
-</div>
 
-</div>
-    {% endraw %}
+<span class="k">def</span> <span class="nf">NGaussFunc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">):</span>  <span class="c1"># x0 pk width</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+        <span class="n">ctr</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">amp</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">wid</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="n">amp</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">ctr</span><span class="p">)</span> <span class="o">/</span> <span class="n">wid</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">y</span> <span class="o">+</span> <span class="n">params</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
 
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">pass</span>
+<span class="k">def</span> <span class="nf">linerise_wavelength</span><span class="p">(</span><span class="n">rawimagedata</span><span class="p">,</span> <span class="n">wavecalfile</span><span class="o">=</span><span class="s2">&quot;cal_files/wavesoln.npz&quot;</span><span class="p">):</span>
+    <span class="n">npzfile</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">wavecalfile</span><span class="p">)</span>
+    <span class="n">wavecal</span> <span class="o">=</span> <span class="n">npzfile</span><span class="p">[</span><span class="s2">&quot;wavecal&quot;</span><span class="p">]</span>
+    <span class="n">newwave</span> <span class="o">=</span> <span class="n">npzfile</span><span class="p">[</span><span class="s2">&quot;newwave&quot;</span><span class="p">]</span>
+
+    <span class="c1"># # min and max wave in all cols.</span>
+    <span class="c1"># minwave = wavecal.min(axis=1).max()</span>
+    <span class="c1"># maxwave = wavecal.max(axis=1).min()</span>
+    <span class="c1"># minwavedelta = np.diff(wavecal, axis=1).min()</span>
+
+    <span class="c1"># newwave = np.arange(minwave, maxwave, minwavedelta)</span>
+
+    <span class="n">interpimg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">wavecal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">newwave</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">wavecal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="n">wavecal</span><span class="p">[</span><span class="n">col</span><span class="p">,</span> <span class="p">:],</span> <span class="n">rawimagedata</span><span class="p">[</span><span class="n">col</span><span class="p">,</span> <span class="p">:])</span>
+        <span class="n">interpimg</span><span class="p">[</span><span class="n">col</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">newwave</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">interpimg</span>
+
+
+<span class="k">def</span> <span class="nf">fit_arc_lines</span><span class="p">(</span><span class="n">arcimg</span><span class="p">,</span> <span class="n">spatial_col_skip</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">wavecalfile</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="n">arcimg</span> <span class="o">=</span> <span class="n">arcimg</span> <span class="o">*</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">arcimg</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">spatialaxis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">arcimg</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">waveaxis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">arcimg</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">arcgausfits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">arcimg</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">spatial_col_skip</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">28</span><span class="p">))</span>
+
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">arcimg</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">peaks</span><span class="p">,</span> <span class="n">properties</span> <span class="o">=</span> <span class="n">find_peaks</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">prominence</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+
+    <span class="n">y0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">peaks</span><span class="o">.</span><span class="n">size</span> <span class="o">*</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">y0</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">peaks</span>
+    <span class="n">y0</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[</span><span class="s2">&quot;peak_heights&quot;</span><span class="p">]</span>
+    <span class="n">y0</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">properties</span><span class="p">[</span><span class="s2">&quot;widths&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">0.5</span>
+    <span class="n">y0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y0</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">)</span>
+
+    <span class="n">arcgausfits</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">pcov</span> <span class="o">=</span> <span class="n">curve_fit</span><span class="p">(</span><span class="n">NGaussFunc</span><span class="p">,</span> <span class="n">waveaxis</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">p0</span><span class="o">=</span><span class="n">y0</span><span class="p">)</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Fitting Arc Lines in each col...&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">arcimg</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">spatial_col_skip</span><span class="p">)):</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="n">arcimg</span><span class="p">[</span><span class="n">col</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">y0</span> <span class="o">=</span> <span class="n">arcgausfits</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">arcgausfits</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span> <span class="n">pcov</span> <span class="o">=</span> <span class="n">curve_fit</span><span class="p">(</span><span class="n">NGaussFunc</span><span class="p">,</span> <span class="n">waveaxis</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">p0</span><span class="o">=</span><span class="n">y0</span><span class="p">)</span>
+
+    <span class="n">pos</span> <span class="o">=</span> <span class="n">arcgausfits</span><span class="p">[:,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">arcgausfits</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)]</span>
+    <span class="n">peakheight</span> <span class="o">=</span> <span class="n">arcgausfits</span><span class="p">[:,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">arcgausfits</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)]</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="n">arcgausfits</span><span class="p">[:,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">arcgausfits</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)]</span>
+
+    <span class="n">smoothed_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pos</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])):</span>
+        <span class="n">smoothed_pos</span><span class="p">[:,</span> <span class="n">row</span><span class="p">]</span> <span class="o">=</span> <span class="n">savgol_filter</span><span class="p">(</span><span class="n">pos</span><span class="p">[:,</span> <span class="n">row</span><span class="p">],</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+    <span class="n">spectral_lines</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="mf">4358.328</span><span class="p">,</span>
+                <span class="mf">5460.735</span><span class="p">,</span>
+                <span class="mf">5769.598</span><span class="p">,</span>
+                <span class="mf">5790.663</span><span class="p">,</span>
+                <span class="mf">6965.4307</span><span class="p">,</span>
+                <span class="mf">7067.2175</span><span class="p">,</span>
+                <span class="mf">7272.9359</span><span class="p">,</span>
+                <span class="mf">7383.9805</span><span class="p">,</span>
+                <span class="mf">7503.8691</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="o">/</span> <span class="mi">10</span>
+    <span class="p">)</span>
+
+    <span class="n">wavecal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">smoothed_pos</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">waveaxis</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">smoothed_pos</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">smoothed_pos</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span> <span class="n">spectral_lines</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">poly1d</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+        <span class="n">wavecal</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">](</span><span class="n">waveaxis</span><span class="p">)</span>
+
+    <span class="n">minwave</span> <span class="o">=</span> <span class="n">wavecal</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">maxwave</span> <span class="o">=</span> <span class="n">wavecal</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="n">minwavedelta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">wavecal</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+
+    <span class="n">newwave</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">minwave</span><span class="p">,</span> <span class="n">maxwave</span><span class="p">,</span> <span class="n">minwavedelta</span><span class="p">)</span>
+
+    <span class="n">interpimg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">wavecal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">newwave</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">wavecal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="n">wavecal</span><span class="p">[</span><span class="n">col</span><span class="p">,</span> <span class="p">:],</span> <span class="n">arcimg</span><span class="p">[</span><span class="n">col</span><span class="p">,</span> <span class="p">:])</span>
+    <span class="n">interpimg</span><span class="p">[</span><span class="n">col</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">newwave</span><span class="p">)</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;wavecal&quot;</span><span class="p">:</span> <span class="n">wavecal</span><span class="p">,</span>
+        <span class="s2">&quot;pos&quot;</span><span class="p">:</span> <span class="n">pos</span><span class="p">,</span>
+        <span class="s2">&quot;peakheight&quot;</span><span class="p">:</span> <span class="n">peakheight</span><span class="p">,</span>
+        <span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="n">width</span><span class="p">,</span>
+        <span class="s2">&quot;smoothed_pos&quot;</span><span class="p">:</span> <span class="n">smoothed_pos</span><span class="p">,</span>
+        <span class="s2">&quot;newwave&quot;</span><span class="p">:</span> <span class="n">newwave</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">wavecalfile</span><span class="p">):</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="n">wavecalfile</span><span class="p">,</span> <span class="o">**</span><span class="n">result</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">if __name__ == &quot;__main__&quot;:</span>
+<span class="sd">    hdulist = fitsio.open(&quot;cal_files/arc.fits&quot;)</span>
+<span class="sd">    arcimg = np.rot90(hdulist[0].data, -1)</span>
+<span class="sd">    result = fit_arc_lines(arcimg)</span>
+<span class="sd">    for key, value in result.items():</span>
+<span class="sd">        print(key, &quot; : ...&quot;)</span>
+<span class="sd">    for key, value in result.items():</span>
+<span class="sd">        print(key, &quot; : ...&quot;)</span>
+<span class="sd">&quot;&quot;&quot;</span>
 </pre></div>
 
     </div>
