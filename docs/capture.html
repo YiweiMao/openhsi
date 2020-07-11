@@ -66,6 +66,13 @@ description: "Wrapper class and example code for getting images from the OpenHSI
 </div>
     {% endraw %}
 
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The <a href="/openhsi/capture#OpenHSI"><code>OpenHSI</code></a> class contains getters and setters to return and modify the <code>exposure</code> (in milliseconds) and <code>gain</code>.</p>
+
+</div>
+</div>
+</div>
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
@@ -77,9 +84,9 @@ description: "Wrapper class and example code for getting images from the OpenHSI
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="OpenHSI.get_img" class="doc_header"><code>OpenHSI.get_img</code><a href="https://github.com/YiweiMao/openhsi/tree/master/openhsi/capture.py#L74" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>OpenHSI.get_img</code>(<strong><code>n</code></strong>:<code>int</code>=<em><code>1</code></em>)</p>
+<h4 id="OpenHSI.get_img" class="doc_header"><code>OpenHSI.get_img</code><a href="https://github.com/YiweiMao/openhsi/tree/master/openhsi/capture.py#L76" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>OpenHSI.get_img</code>(<strong><code>n</code></strong>:<code>int</code>=<em><code>1</code></em>, <strong><code>show</code></strong>:<code>bool</code>=<em><code>True</code></em>)</p>
 </blockquote>
-<p>Take <code>n</code> images</p>
+<p>Take <code>n</code> images with option to <code>show</code> first image taken.</p>
 
 </div>
 
@@ -95,6 +102,13 @@ description: "Wrapper class and example code for getting images from the OpenHSI
     
 <div class="cell border-box-sizing code_cell rendered">
 
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
 <div class="output_wrapper">
 <div class="output">
 
@@ -102,7 +116,7 @@ description: "Wrapper class and example code for getting images from the OpenHSI
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="OpenHSI.take_show" class="doc_header"><code>OpenHSI.take_show</code><a href="https://github.com/YiweiMao/openhsi/tree/master/openhsi/capture.py#L82" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>OpenHSI.take_show</code>()</p>
+<h4 id="take_show" class="doc_header"><code>take_show</code><a href="https://github.com/YiweiMao/openhsi/tree/master/openhsi/capture.py#L96" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>take_show</code>()</p>
 </blockquote>
 <p>Grab a single image using <code>get_img</code> and plot it</p>
 
@@ -116,6 +130,13 @@ description: "Wrapper class and example code for getting images from the OpenHSI
 </div>
     {% endraw %}
 
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>For convience, a function is provided that initialises the camera, takes an image, and display it.</p>
+
+</div>
+</div>
+</div>
 </div>
  
 

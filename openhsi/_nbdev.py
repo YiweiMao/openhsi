@@ -2,11 +2,14 @@
 
 __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
-index = {"OpenHSI": "01_capture.ipynb",
-         "save": "02_convert.ipynb",
-         "HelloSayer": "02_convert.ipynb"}
+index = {"sum_gaussians": "00_calibrate.ipynb",
+         "fit_arc_lines2": "00_calibrate.ipynb",
+         "OpenHSI": "01_capture.ipynb",
+         "take_show": "01_capture.ipynb",
+         "save": "02_convert.ipynb"}
 
-modules = ["capture.py",
+modules = ["calibrate.py",
+           "capture.py",
            "convert.py"]
 
 doc_url = "https://YiweiMao.github.io/openhsi/"
