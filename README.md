@@ -15,24 +15,71 @@
 
 ## How to use
 
-Fill me in please! Don't forget code examples:
+### Taking a single picture
 
 ```
-from openhsi import *
+from openhsi.capture import *
 
-take_show()
+try:
+    take_show()
+except:
+    print('No devices found. Camera not connected.')
 ```
 
+    No devices found. Camera not connected.
 
-    ---------------------------------------------------------------------------
 
-    NameError                                 Traceback (most recent call last)
+### Changing the Exposure and Gain
 
-    <ipython-input-1-d2e05d40d15b> in <module>
-          1 from openhsi import *
-          2 
-    ----> 3 take_show()
-    
+```
+try:
+    with OpenHSI(xbinwidth=896,xbinoffset=528,exposure_ms=1000,gain=0) as cam:
+        cam.exposure    = 100
+        cam.gain        = 5
 
-    NameError: name 'take_show' is not defined
+        img = cam.start().get_img()
+        plt.imshow(img)
+        plt.xlabel('Wavelength (nm)')
+        plt.ylabel('Line pixels')
+        plt.show()
+except:
+    print('No devices found. Camera not connected.')
+```
+
+    No devices found. Camera not connected.
+
+
+### Calibration
+
+```
+from openhsi.calibrate import *
+result = fit_arc_lines2(arc_file = "cal_files/arc.hdf5", wave_save_file = None, skip = 1, show = True)
+```
+
+    Fit arc lines for each spatial pixel
+
+
+
+
+<div>
+    <style>
+        /* Turns off some styling */
+        progress {
+            /* gets rid of default border in Firefox and Opera. */
+            border: none;
+            /* Needs to be in here for Safari polyfill so background images work as expected. */
+            background-size: auto;
+        }
+        .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+            background: #F44336;
+        }
+    </style>
+  <progress value='0' class='' max='896' style='width:300px; height:20px; vertical-align: middle;'></progress>
+
+</div>
+
+
+
+
+![svg](docs/images/output_10_2.svg)
 

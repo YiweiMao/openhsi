@@ -13,7 +13,8 @@ import h5py
 
 # Cell
 
-def sum_gaussians(x:"wavelength np.array", *args) -> float:
+def sum_gaussians(x:"wavelength np.array",
+                    *args:"amplitude, peak position, peak width, constant") -> np.array:
     split = len(args)//3
     A   = args[0:split]         # amplitude
     mu  = args[split:2*split]   # peak position
